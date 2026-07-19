@@ -15,9 +15,12 @@ setup.env
 
 # Go build output
 **/bin/
+**/server/go/flutter_scripts_gui
+**/server/go/isolate_monitor
 *.exe
 *.test
 *.out
+!**/cmd/**/
 
 # Dart / Flutter tooling (if present under packages)
 **/.dart_tool/

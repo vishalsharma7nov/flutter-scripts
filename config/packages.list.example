@@ -1,0 +1,5 @@
+# Copy to packages.list and edit for your organization.
+# Format: git_url|directory_under_PACKAGES_ROOT
+#
+# https://github.com/your-org/shared_ui.git|shared_ui
+# https://github.com/your-org/native_plugin.git|native/native_plugin

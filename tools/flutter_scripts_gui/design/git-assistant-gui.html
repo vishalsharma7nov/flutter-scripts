@@ -1,0 +1,1237 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark" />
+    <title>Git Assist — GUI design</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,600;1,600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0e1117;
+        --bg-2: #141824;
+        --panel: #1a1f2c;
+        --panel-2: #222838;
+        --ink: #e8ecf4;
+        --muted: #9aa3b5;
+        --line: #32384a;
+        --accent: #3dd68c;
+        --accent-ink: #07140f;
+        --accent-soft: #1a3a2c;
+        --warn: #e6a23c;
+        --warn-soft: #3a2c14;
+        --danger: #f07178;
+        --danger-soft: #3a1f24;
+        --focus: #5b8def;
+        --mono: "IBM Plex Mono", ui-monospace, monospace;
+        --sans: "IBM Plex Sans", "Segoe UI", sans-serif;
+        --serif: "IBM Plex Serif", Georgia, serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: var(--sans);
+        color: var(--ink);
+        background:
+          radial-gradient(ellipse 70% 50% at 8% 0%, rgba(61, 214, 140, 0.1), transparent 55%),
+          radial-gradient(ellipse 50% 40% at 100% 100%, rgba(91, 141, 239, 0.08), transparent 50%),
+          linear-gradient(165deg, #141824 0%, #10131a 50%, #0e1117 100%);
+      }
+
+      button,
+      textarea,
+      input {
+        font: inherit;
+        color: inherit;
+      }
+
+      .shell {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 1.25rem 1.25rem 2.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        min-height: 100vh;
+      }
+
+      /* Top bar */
+      .topbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding-bottom: 0.85rem;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .brand {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-family: var(--serif);
+        font-size: 1.55rem;
+        letter-spacing: -0.02em;
+        font-weight: 600;
+      }
+
+      .brand p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.88rem;
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--line));
+        background: var(--accent-soft);
+        color: var(--accent);
+        border-radius: 999px;
+        padding: 0.35rem 0.75rem;
+        font-size: 0.8rem;
+        font-weight: 500;
+      }
+
+      .status-dot {
+        width: 0.45rem;
+        height: 0.45rem;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+      }
+
+      /* Views */
+      .view {
+        display: none;
+        flex: 1;
+        flex-direction: column;
+        gap: 1rem;
+        animation: rise 0.35s ease both;
+      }
+
+      .view.active {
+        display: flex;
+      }
+
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      /* Home: three paths */
+      .home-hero {
+        padding: 0.5rem 0 0.25rem;
+      }
+
+      .home-hero h2 {
+        margin: 0 0 0.4rem;
+        font-family: var(--serif);
+        font-size: clamp(1.6rem, 3vw, 2.1rem);
+        letter-spacing: -0.03em;
+        line-height: 1.15;
+        max-width: 18ch;
+      }
+
+      .home-hero p {
+        margin: 0;
+        color: var(--muted);
+        max-width: 38rem;
+        line-height: 1.5;
+        font-size: 1rem;
+      }
+
+      .path-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.85rem;
+      }
+
+      @media (max-width: 860px) {
+        .path-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .path {
+        text-align: left;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        border-radius: 14px;
+        padding: 1.15rem 1.1rem 1.2rem;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+        min-height: 11.5rem;
+        transition:
+          border-color 0.15s ease,
+          background 0.15s ease,
+          transform 0.15s ease;
+      }
+
+      .path:hover {
+        border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
+        background: color-mix(in srgb, var(--accent-soft) 35%, var(--panel));
+        transform: translateY(-2px);
+      }
+
+      .path:focus-visible {
+        outline: 2px solid var(--focus);
+        outline-offset: 2px;
+      }
+
+      .path-num {
+        font-family: var(--mono);
+        font-size: 0.75rem;
+        color: var(--accent);
+        letter-spacing: 0.04em;
+      }
+
+      .path h3 {
+        margin: 0;
+        font-size: 1.15rem;
+        font-weight: 600;
+      }
+
+      .path p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.45;
+        flex: 1;
+      }
+
+      .path-cta {
+        margin-top: 0.25rem;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--accent);
+      }
+
+      .path.primary {
+        border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+        background: linear-gradient(
+          160deg,
+          color-mix(in srgb, var(--accent-soft) 80%, var(--panel)) 0%,
+          var(--panel) 70%
+        );
+      }
+
+      /* Feature strip under home */
+      .feature-rail {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.85rem;
+        align-items: center;
+        border-top: 1px solid var(--line);
+        padding-top: 1rem;
+        margin-top: 0.25rem;
+      }
+
+      .feature-rail > span {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+
+      .feature-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+      }
+
+      .chip {
+        border: 1px solid var(--line);
+        background: var(--panel-2);
+        border-radius: 8px;
+        padding: 0.35rem 0.65rem;
+        font-size: 0.8rem;
+        color: var(--ink);
+        cursor: pointer;
+      }
+
+      .chip:hover {
+        border-color: color-mix(in srgb, var(--focus) 55%, var(--line));
+        color: #c5d4f5;
+      }
+
+      /* Repo context strip */
+      .repo-strip {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem 1rem;
+        align-items: center;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 0.65rem 0.9rem;
+        font-size: 0.82rem;
+      }
+
+      .repo-strip .k {
+        color: var(--muted);
+      }
+
+      .repo-strip .v {
+        font-family: var(--mono);
+        color: var(--ink);
+      }
+
+      .repo-strip .sep {
+        width: 1px;
+        height: 1rem;
+        background: var(--line);
+      }
+
+      /* Shared panels */
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 1rem 1.05rem;
+      }
+
+      .btn {
+        border: 1px solid var(--line);
+        background: var(--panel-2);
+        border-radius: 8px;
+        padding: 0.5rem 0.85rem;
+        cursor: pointer;
+      }
+
+      .btn:hover {
+        background: #2a3144;
+      }
+
+      .btn-accent {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: var(--accent-ink);
+        font-weight: 600;
+      }
+
+      .btn-accent:hover {
+        filter: brightness(1.05);
+        background: var(--accent);
+      }
+
+      .btn-ghost {
+        background: transparent;
+      }
+
+      .btn-warn {
+        background: var(--warn-soft);
+        border-color: color-mix(in srgb, var(--warn) 45%, var(--line));
+        color: var(--warn);
+      }
+
+      .row {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .row.between {
+        justify-content: space-between;
+      }
+
+      .back {
+        align-self: flex-start;
+      }
+
+      /* Fix flow */
+      .fix-layout {
+        display: grid;
+        grid-template-columns: minmax(260px, 340px) 1fr;
+        gap: 1rem;
+        align-items: start;
+      }
+
+      @media (max-width: 800px) {
+        .fix-layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .paste-box h3 {
+        margin: 0 0 0.35rem;
+        font-size: 1rem;
+      }
+
+      .paste-box p {
+        margin: 0 0 0.65rem;
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 9rem;
+        resize: vertical;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: var(--bg-2);
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+        line-height: 1.45;
+      }
+
+      textarea::placeholder {
+        color: #6b7488;
+      }
+
+      .sample-link {
+        background: none;
+        border: none;
+        color: var(--focus);
+        cursor: pointer;
+        padding: 0;
+        font-size: 0.82rem;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+
+      /* Diagnosis result */
+      .diag-head {
+        margin-bottom: 1rem;
+      }
+
+      .eyebrow {
+        margin: 0 0 0.3rem;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--muted);
+      }
+
+      .diag-head h2 {
+        margin: 0 0 0.5rem;
+        font-family: var(--serif);
+        font-size: 1.45rem;
+        letter-spacing: -0.02em;
+      }
+
+      .why {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      .why strong {
+        color: var(--ink);
+        font-weight: 600;
+      }
+
+      .badge-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin: 0.85rem 0 0;
+      }
+
+      .badge {
+        font-size: 0.75rem;
+        border-radius: 999px;
+        padding: 0.25rem 0.6rem;
+        border: 1px solid var(--line);
+        background: var(--panel-2);
+      }
+
+      .badge.safe {
+        color: var(--accent);
+        border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+        background: var(--accent-soft);
+      }
+
+      .badge.warn {
+        color: var(--warn);
+        border-color: color-mix(in srgb, var(--warn) 40%, var(--line));
+        background: var(--warn-soft);
+      }
+
+      .flow-steps {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.45rem;
+        margin: 0 0 1.1rem;
+      }
+
+      @media (max-width: 640px) {
+        .flow-steps {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .flow-step {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 0.55rem 0.65rem;
+        background: var(--bg-2);
+        font-size: 0.8rem;
+      }
+
+      .flow-step.active {
+        border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
+        background: var(--accent-soft);
+      }
+
+      .flow-step .n {
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 0.7rem;
+      }
+
+      .flow-step.active .n {
+        color: var(--accent);
+      }
+
+      .flow-step .t {
+        display: block;
+        margin-top: 0.15rem;
+        font-weight: 600;
+      }
+
+      .section-title {
+        margin: 0 0 0.65rem;
+        font-size: 0.95rem;
+      }
+
+      .cmd {
+        background: #0a0c10;
+        border: 1px solid #222836;
+        border-radius: 10px;
+        padding: 0.75rem 0.85rem;
+        margin-bottom: 0.65rem;
+      }
+
+      .cmd-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.5rem;
+        align-items: flex-start;
+      }
+
+      .cmd pre {
+        margin: 0;
+        flex: 1;
+        font-family: var(--mono);
+        font-size: 0.85rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+        color: #d7dde8;
+      }
+
+      .cmd .what {
+        margin: 0.4rem 0 0;
+        color: #9aa3b5;
+        font-size: 0.8rem;
+        line-height: 1.4;
+      }
+
+      .btn-small {
+        padding: 0.25rem 0.55rem;
+        font-size: 0.78rem;
+      }
+
+      .warning-banner {
+        margin: 0 0 0.85rem;
+        padding: 0.6rem 0.75rem;
+        border-radius: 10px;
+        border: 1px solid color-mix(in srgb, var(--warn) 40%, var(--line));
+        background: var(--warn-soft);
+        color: var(--warn);
+        font-size: 0.85rem;
+        line-height: 1.4;
+      }
+
+      .actions-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        padding-top: 0.85rem;
+        border-top: 1px solid var(--line);
+      }
+
+      /* How-to view */
+      .howto-layout {
+        display: grid;
+        grid-template-columns: minmax(220px, 280px) 1fr;
+        gap: 1rem;
+      }
+
+      @media (max-width: 800px) {
+        .howto-layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .day-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+      }
+
+      .day-list button {
+        width: 100%;
+        text-align: left;
+        display: flex;
+        gap: 0.55rem;
+        align-items: center;
+        border: 1px solid var(--line);
+        background: var(--panel-2);
+        border-radius: 8px;
+        padding: 0.5rem 0.65rem;
+        cursor: pointer;
+      }
+
+      .day-list button.active,
+      .day-list button:hover {
+        border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+        background: var(--accent-soft);
+        color: var(--accent);
+      }
+
+      .day-num {
+        width: 1.3rem;
+        height: 1.3rem;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: 0.7rem;
+        border: 1px solid var(--line);
+        background: var(--bg-2);
+        color: var(--muted);
+        flex: 0 0 auto;
+      }
+
+      .day-list button.active .day-num {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: var(--accent-ink);
+      }
+
+      .step-ol {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+        counter-reset: ht;
+      }
+
+      .step-ol li {
+        counter-increment: ht;
+      }
+
+      .step-ol h4 {
+        margin: 0 0 0.4rem;
+        font-size: 0.95rem;
+      }
+
+      .step-ol h4::before {
+        content: counter(ht) ". ";
+        color: var(--accent);
+        font-family: var(--mono);
+      }
+
+      /* Status view */
+      .status-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+
+      @media (max-width: 700px) {
+        .status-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .metric {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 0.75rem;
+        background: var(--bg-2);
+      }
+
+      .metric .lbl {
+        margin: 0 0 0.25rem;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--muted);
+      }
+
+      .metric .val {
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 0.95rem;
+      }
+
+      .outbox {
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 0.8rem;
+        color: #b8c0d0;
+        white-space: pre-wrap;
+        line-height: 1.5;
+      }
+
+      .design-note {
+        margin-top: auto;
+        padding-top: 1rem;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 0.8rem;
+        line-height: 1.45;
+      }
+
+      .design-note strong {
+        color: var(--ink);
+      }
+
+      .toast {
+        position: fixed;
+        bottom: 1.25rem;
+        right: 1.25rem;
+        background: var(--panel-2);
+        border: 1px solid var(--line);
+        color: var(--ink);
+        padding: 0.55rem 0.85rem;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+        z-index: 20;
+      }
+
+      .toast.show {
+        opacity: 1;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <h1>Git Assist</h1>
+          <p>See the problem → understand why → apply a safe fix</p>
+        </div>
+        <div class="status-pill" title="Runs on your machine via Ollama">
+          <span class="status-dot" aria-hidden="true"></span>
+          Local model · no API cost
+        </div>
+      </header>
+
+      <!-- HOME -->
+      <section id="view-home" class="view active" aria-label="Home">
+        <div class="home-hero">
+          <h2>What do you need right now?</h2>
+          <p>
+            Three clear paths. Start with the error when something breaks; use
+            workflows when you are learning; check status when the repo feels
+            uncertain.
+          </p>
+        </div>
+
+        <div class="path-grid">
+          <button type="button" class="path primary" data-go="fix">
+            <span class="path-num">01</span>
+            <h3>Fix an error</h3>
+            <p>
+              Paste a commit, push, pull, or merge failure. Get a plain-language
+              diagnosis and step-by-step commands.
+            </p>
+            <span class="path-cta">Paste error →</span>
+          </button>
+          <button type="button" class="path" data-go="howto">
+            <span class="path-num">02</span>
+            <h3>Daily workflows</h3>
+            <p>
+              Clone, branch, commit, push, open a PR — each step explained so
+              you know what the command does.
+            </p>
+            <span class="path-cta">Browse how-to →</span>
+          </button>
+          <button type="button" class="path" data-go="status">
+            <span class="path-num">03</span>
+            <h3>Repo status</h3>
+            <p>
+              Live branch, remote, ahead/behind, and dirty files — grounded truth
+              before the assistant suggests anything.
+            </p>
+            <span class="path-cta">Inspect repo →</span>
+          </button>
+        </div>
+
+        <div class="feature-rail">
+          <span>Also covers</span>
+          <div class="feature-chips">
+            <button type="button" class="chip" data-go="fix" data-sample="push">
+              Push rejected
+            </button>
+            <button type="button" class="chip" data-go="fix" data-sample="merge">
+              Merge conflict
+            </button>
+            <button type="button" class="chip" data-go="fix" data-sample="auth">
+              Auth / SSH
+            </button>
+            <button type="button" class="chip" data-go="howto">
+              Pull request
+            </button>
+            <button type="button" class="chip" data-go="howto">
+              Rebase
+            </button>
+            <button type="button" class="chip" data-go="status">
+              Detached HEAD
+            </button>
+          </div>
+        </div>
+
+        <p class="design-note">
+          <strong>Design principle:</strong> do not open on a long list.
+          Open on intent. Users should know in under 3 seconds where to tap.
+        </p>
+      </section>
+
+      <!-- FIX -->
+      <section id="view-fix" class="view" aria-label="Fix an error">
+        <button type="button" class="btn btn-ghost back" data-go="home">
+          ← All paths
+        </button>
+
+        <div class="repo-strip" aria-label="Repo context">
+          <span><span class="k">Project </span><span class="v">flutter-scripts</span></span>
+          <span class="sep" aria-hidden="true"></span>
+          <span><span class="k">Branch </span><span class="v">feature/gui</span></span>
+          <span class="sep" aria-hidden="true"></span>
+          <span><span class="k">vs origin </span><span class="v">behind 2</span></span>
+          <span class="sep" aria-hidden="true"></span>
+          <span><span class="k">Model </span><span class="v">qwen2.5-coder:7b</span></span>
+        </div>
+
+        <div class="fix-layout">
+          <aside class="panel paste-box">
+            <h3>Paste the error</h3>
+            <p>
+              Terminal output works best. Or
+              <button type="button" class="sample-link" id="load-sample">
+                load a sample push rejection
+              </button>
+              .
+            </p>
+            <textarea
+              id="error-input"
+              placeholder="! [rejected] main -> main (non-fast-forward)&#10;error: failed to push some refs..."
+            ></textarea>
+            <div class="row">
+              <button type="button" class="btn btn-accent" id="btn-analyze">
+                Analyze
+              </button>
+              <button type="button" class="btn" id="btn-clear">Clear</button>
+            </div>
+          </aside>
+
+          <main class="panel" id="result-panel">
+            <div id="result-empty">
+              <p class="eyebrow">Diagnosis</p>
+              <h2 style="font-family: var(--serif); margin: 0 0 0.5rem; font-size: 1.35rem">
+                Waiting for an error
+              </h2>
+              <p class="why">
+                After you analyze, this panel shows what broke, why it happened,
+                risk level, then diagnose commands and the fix — in that order.
+              </p>
+            </div>
+
+            <div id="result-filled" class="hidden">
+              <div class="diag-head">
+                <p class="eyebrow">Matched · Push rejected</p>
+                <h2>Non-fast-forward push to main</h2>
+                <p class="why">
+                  <strong>Why: </strong>Your local branch and the remote have
+                  diverged. Remote has commits you do not have, so a normal push
+                  would overwrite history and is blocked.
+                </p>
+                <div class="badge-row">
+                  <span class="badge safe">Safe fix available</span>
+                  <span class="badge warn">Avoid force-push on main</span>
+                  <span class="badge">GitHub · branch protection</span>
+                </div>
+              </div>
+
+              <div class="flow-steps" aria-label="Fix progress">
+                <div class="flow-step active" id="flow-1">
+                  <span class="n">STEP 1</span>
+                  <span class="t">Confirm with diagnose</span>
+                </div>
+                <div class="flow-step" id="flow-2">
+                  <span class="n">STEP 2</span>
+                  <span class="t">Apply the fix</span>
+                </div>
+                <div class="flow-step" id="flow-3">
+                  <span class="n">STEP 3</span>
+                  <span class="t">Verify push works</span>
+                </div>
+              </div>
+
+              <h3 class="section-title">1. Diagnose first</h3>
+              <p class="why" style="margin-bottom: 0.65rem">
+                Run these to confirm what the model saw matches your repo.
+              </p>
+
+              <div class="cmd">
+                <div class="cmd-top">
+                  <pre>git fetch origin
+git status -sb</pre>
+                  <button type="button" class="btn btn-small copy-btn">Copy</button>
+                </div>
+                <p class="what">
+                  Updates remote refs, then shows whether you are ahead, behind,
+                  or diverged — without changing your files.
+                </p>
+              </div>
+
+              <div class="cmd">
+                <div class="cmd-top">
+                  <pre>git log --oneline --left-right HEAD...origin/main</pre>
+                  <button type="button" class="btn btn-small copy-btn">Copy</button>
+                </div>
+                <p class="what">
+                  Lists commits only on your side vs only on the remote so you
+                  can see the diverge clearly.
+                </p>
+              </div>
+
+              <div class="actions-bar">
+                <button type="button" class="btn btn-accent" id="btn-show-fix">
+                  Show solution
+                </button>
+                <button type="button" class="btn" id="btn-copy-all">
+                  Copy diagnose commands
+                </button>
+              </div>
+
+              <div id="fix-block" class="hidden" style="margin-top: 1.25rem">
+                <h3 class="section-title">2. Solution</h3>
+                <div class="warning-banner">
+                  Do not use <code>git push --force</code> on protected
+                  <code>main</code>. Prefer rebase (or merge) then a normal push.
+                </div>
+                <div class="cmd">
+                  <div class="cmd-top">
+                    <pre>git pull --rebase origin main
+git push origin HEAD</pre>
+                    <button type="button" class="btn btn-small copy-btn">Copy</button>
+                  </div>
+                  <p class="what">
+                    Replays your commits on top of the latest remote main, then
+                    pushes. If conflicts appear, resolve files and run
+                    <code>git rebase --continue</code>.
+                  </p>
+                </div>
+                <div class="actions-bar">
+                  <button type="button" class="btn btn-accent" id="btn-mark-done">
+                    Mark as fixed
+                  </button>
+                  <button type="button" class="btn btn-warn">
+                    I need a destructive option…
+                  </button>
+                </div>
+              </div>
+            </div>
+          </main>
+        </div>
+      </section>
+
+      <!-- HOWTO -->
+      <section id="view-howto" class="view" aria-label="Daily workflows">
+        <button type="button" class="btn btn-ghost back" data-go="home">
+          ← All paths
+        </button>
+
+        <div class="howto-layout">
+          <aside class="panel">
+            <p class="eyebrow">Typical day</p>
+            <ul class="day-list">
+              <li>
+                <button type="button" class="active" data-howto="commit">
+                  <span class="day-num">1</span> Commit changes
+                </button>
+              </li>
+              <li>
+                <button type="button" data-howto="push">
+                  <span class="day-num">2</span> Push to remote
+                </button>
+              </li>
+              <li>
+                <button type="button" data-howto="pr">
+                  <span class="day-num">3</span> Open a pull request
+                </button>
+              </li>
+              <li>
+                <button type="button" data-howto="pull">
+                  <span class="day-num">4</span> Pull latest
+                </button>
+              </li>
+              <li>
+                <button type="button" data-howto="merge">
+                  <span class="day-num">5</span> Merge a branch
+                </button>
+              </li>
+            </ul>
+          </aside>
+          <article class="panel" id="howto-detail">
+            <p class="eyebrow">How-to</p>
+            <h2 style="font-family: var(--serif); margin: 0 0 0.4rem; font-size: 1.4rem">
+              Commit changes
+            </h2>
+            <p class="why" style="margin-bottom: 1rem">
+              Stage what you intend to keep, then create a local commit with a
+              clear message. Nothing is shared until you push.
+            </p>
+            <ol class="step-ol">
+              <li>
+                <h4>See what changed</h4>
+                <div class="cmd">
+                  <div class="cmd-top">
+                    <pre>git status
+git diff</pre>
+                    <button type="button" class="btn btn-small copy-btn">Copy</button>
+                  </div>
+                  <p class="what">
+                    Lists modified files; <code>diff</code> shows the exact
+                    line changes before you stage.
+                  </p>
+                </div>
+              </li>
+              <li>
+                <h4>Stage and commit</h4>
+                <div class="cmd">
+                  <div class="cmd-top">
+                    <pre>git add -p
+git commit -m "Describe why, not only what"</pre>
+                    <button type="button" class="btn btn-small copy-btn">Copy</button>
+                  </div>
+                  <p class="what">
+                    <code>-p</code> lets you stage hunks intentionally so you do
+                    not commit leftovers by accident.
+                  </p>
+                </div>
+              </li>
+            </ol>
+          </article>
+        </div>
+      </section>
+
+      <!-- STATUS -->
+      <section id="view-status" class="view" aria-label="Repo status">
+        <button type="button" class="btn btn-ghost back" data-go="home">
+          ← All paths
+        </button>
+
+        <div class="status-grid">
+          <div class="panel">
+            <p class="eyebrow">Live snapshot</p>
+            <h2 style="font-family: var(--serif); margin: 0 0 0.85rem; font-size: 1.35rem">
+              Repo at a glance
+            </h2>
+            <div class="status-grid" style="margin-bottom: 0.85rem">
+              <div class="metric">
+                <p class="lbl">Branch</p>
+                <p class="val">feature/gui</p>
+              </div>
+              <div class="metric">
+                <p class="lbl">Tracking</p>
+                <p class="val">origin/feature/gui</p>
+              </div>
+              <div class="metric">
+                <p class="lbl">Ahead / behind</p>
+                <p class="val">+1 / −2</p>
+              </div>
+              <div class="metric">
+                <p class="lbl">Working tree</p>
+                <p class="val">3 modified</p>
+              </div>
+            </div>
+            <div class="row">
+              <button type="button" class="btn btn-accent" data-go="fix">
+                Something looks wrong → Fix
+              </button>
+              <button type="button" class="btn" data-go="howto">
+                Continue a workflow
+              </button>
+            </div>
+          </div>
+          <div class="panel">
+            <p class="eyebrow">Raw output</p>
+            <h3 style="margin: 0 0 0.65rem; font-size: 1rem">git status -sb</h3>
+            <pre class="outbox">## feature/gui...origin/feature/gui [ahead 1, behind 2]
+ M frontend/src/App.tsx
+ M frontend/src/styles/app.css
+?? design/git-assistant-gui.html</pre>
+          </div>
+        </div>
+
+        <p class="design-note">
+          <strong>Why this screen exists:</strong> the assistant should never
+          guess from an empty chat. Always show grounded repo facts first.
+        </p>
+      </section>
+    </div>
+
+    <div class="toast" id="toast" role="status">Copied</div>
+
+    <script>
+      const SAMPLE = `To github.com:acme/app.git
+ ! [rejected]        main -> main (non-fast-forward)
+error: failed to push some refs to 'github.com:acme/app.git'
+hint: Updates were rejected because the tip of your current branch is behind
+hint: its remote counterpart. Integrate the remote changes (e.g.
+hint: 'git pull ...') before pushing again.`;
+
+      const views = {
+        home: document.getElementById("view-home"),
+        fix: document.getElementById("view-fix"),
+        howto: document.getElementById("view-howto"),
+        status: document.getElementById("view-status"),
+      };
+
+      function showView(name) {
+        Object.entries(views).forEach(([key, el]) => {
+          el.classList.toggle("active", key === name);
+        });
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      function toast(msg) {
+        const t = document.getElementById("toast");
+        t.textContent = msg;
+        t.classList.add("show");
+        setTimeout(() => t.classList.remove("show"), 1400);
+      }
+
+      document.querySelectorAll("[data-go]").forEach((el) => {
+        el.addEventListener("click", () => {
+          const target = el.getAttribute("data-go");
+          showView(target);
+          if (el.dataset.sample === "push") {
+            document.getElementById("error-input").value = SAMPLE;
+          }
+        });
+      });
+
+      document.getElementById("load-sample").addEventListener("click", () => {
+        document.getElementById("error-input").value = SAMPLE;
+      });
+
+      document.getElementById("btn-clear").addEventListener("click", () => {
+        document.getElementById("error-input").value = "";
+        document.getElementById("result-empty").classList.remove("hidden");
+        document.getElementById("result-filled").classList.add("hidden");
+        document.getElementById("fix-block").classList.add("hidden");
+        document.getElementById("flow-2").classList.remove("active");
+        document.getElementById("flow-3").classList.remove("active");
+      });
+
+      document.getElementById("btn-analyze").addEventListener("click", () => {
+        const raw = document.getElementById("error-input").value.trim();
+        if (!raw) {
+          toast("Paste an error first");
+          return;
+        }
+        document.getElementById("result-empty").classList.add("hidden");
+        document.getElementById("result-filled").classList.remove("hidden");
+        document.getElementById("fix-block").classList.add("hidden");
+        document.getElementById("flow-1").classList.add("active");
+        document.getElementById("flow-2").classList.remove("active");
+        document.getElementById("flow-3").classList.remove("active");
+        toast("Diagnosis ready");
+      });
+
+      document.getElementById("btn-show-fix").addEventListener("click", () => {
+        document.getElementById("fix-block").classList.remove("hidden");
+        document.getElementById("flow-2").classList.add("active");
+        document.getElementById("fix-block").scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+        });
+      });
+
+      document.getElementById("btn-mark-done").addEventListener("click", () => {
+        document.getElementById("flow-3").classList.add("active");
+        toast("Nice — push should work now");
+      });
+
+      document.getElementById("btn-copy-all").addEventListener("click", () => {
+        navigator.clipboard.writeText(
+          "git fetch origin\ngit status -sb\ngit log --oneline --left-right HEAD...origin/main",
+        );
+        toast("Diagnose commands copied");
+      });
+
+      document.querySelectorAll(".copy-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const pre = btn.closest(".cmd").querySelector("pre");
+          navigator.clipboard.writeText(pre.textContent.trim());
+          toast("Copied");
+        });
+      });
+
+      document.querySelectorAll("[data-howto]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          document
+            .querySelectorAll("[data-howto]")
+            .forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          const titles = {
+            commit: "Commit changes",
+            push: "Push to remote",
+            pr: "Open a pull request",
+            pull: "Pull latest",
+            merge: "Merge a branch",
+          };
+          const detail = document.getElementById("howto-detail");
+          detail.querySelector("h2").textContent =
+            titles[btn.dataset.howto] || "Workflow";
+        });
+      });
+    </script>
+  </body>
+</html>

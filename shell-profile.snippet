@@ -1,0 +1,39 @@
+# Flutter global scripts — portable shell setup.
+# After git clone, run: ./setup.sh
+#
+# Add to ~/.zshrc or ~/.bashrc:
+#   source "/path/to/scripts/shell-profile.snippet"
+
+_flutter_scripts_snippet_path() {
+  if [[ -n "${BASH_VERSION:-}" ]]; then
+    printf '%s\n' "${BASH_SOURCE[0]}"
+    return 0
+  fi
+  if [[ -n "${ZSH_VERSION:-}" ]]; then
+    printf '%s\n' "${(%):-%x}"
+    return 0
+  fi
+  printf '%s\n' "$0"
+}
+
+if [[ -z "${SCRIPTS_DIR:-}" ]]; then
+  _flutter_scripts_snippet="$(_flutter_scripts_snippet_path)"
+  export SCRIPTS_DIR="$(cd "$(dirname "$_flutter_scripts_snippet")" && pwd)"
+  unset _flutter_scripts_snippet
+fi
+
+if [[ -f "${SCRIPTS_DIR}/setup.env" ]]; then
+  # shellcheck source=/dev/null
+  source "${SCRIPTS_DIR}/setup.env"
+fi
+
+_flutter_scripts_bin_dir="${FLUTTER_BIN_DIR:-$HOME/.local/bin}"
+if [[ -d "$_flutter_scripts_bin_dir" ]]; then
+  case ":$PATH:" in
+    *":$_flutter_scripts_bin_dir:"*) ;;
+    *) export PATH="$_flutter_scripts_bin_dir:$PATH" ;;
+  esac
+fi
+unset _flutter_scripts_bin_dir
+
+unset -f _flutter_scripts_snippet_path 2>/dev/null || true

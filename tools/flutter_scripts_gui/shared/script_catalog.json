@@ -1,0 +1,80 @@
+{
+  "scripts": {
+    "android-logcat.sh": {
+      "label": "android-logcat",
+      "description": "Stream Android logcat for the app package on a connected device"
+    },
+    "build_android.sh": {
+      "label": "flutter-build-android",
+      "description": "Build a release Android APK or App Bundle with env checks"
+    },
+    "build_both_release_apks.sh": {
+      "label": "flutter-build-both-release-apks",
+      "description": "Build release APKs for two Flutter apps in one run"
+    },
+    "build_ios.sh": {
+      "label": "flutter-build-ios",
+      "description": "Build a release iOS IPA with env checks"
+    },
+    "build_mobile_release.sh": {
+      "label": "flutter-build-mobile",
+      "description": "Build apk or ipa for prod/dev with a single command"
+    },
+    "check_git_identity.sh": {
+      "label": "check-git-identity",
+      "description": "Show git commit author vs GitHub account used by gh"
+    },
+    "classify_version_bump.sh": {
+      "label": "flutter-classify-version-bump",
+      "description": "Classify semver bump (major/minor/patch) for a release"
+    },
+    "clear_pub_cache.sh": {
+      "label": "flutter-clear-pub-cache",
+      "description": "Clear or repair Dart/Flutter pub cache entries"
+    },
+    "device-logs.sh": {
+      "label": "device-logs",
+      "description": "Stream device logs for android or ios (wrapper)"
+    },
+    "get_iam_token.sh": {
+      "label": "flutter-get-iam-token",
+      "description": "Run tool/get_iam_token.dart OTP helper in the project"
+    },
+    "inspect_apk_environment.sh": {
+      "label": "flutter-inspect-apk",
+      "description": "Guess prod vs dev build from host strings inside an APK"
+    },
+    "install-device-logs-global.sh": {
+      "label": "install-device-logs-global",
+      "description": "Install device-log commands to ~/.local/bin"
+    },
+    "install_global.sh": {
+      "label": "install-global",
+      "description": "Install or relink all script commands to ~/.local/bin"
+    },
+    "ios-device-logs.sh": {
+      "label": "ios-device-logs",
+      "description": "Stream iOS simulator or device logs for the app bundle id"
+    },
+    "open-isolate-monitor.sh": {
+      "label": "isolate-monitor",
+      "description": "Deploy debug/release to device; isolates (debug) or device logs (release)"
+    },
+    "release_package.sh": {
+      "label": "release-package",
+      "description": "Config-driven release for any Flutter git package (see release.config.sh per package)"
+    },
+    "setup.sh": {
+      "label": "setup (first-time)",
+      "description": "One-time bootstrap after clone (chmod, setup.env, global install)"
+    },
+    "setup_packages.sh": {
+      "label": "flutter-setup-packages",
+      "description": "Clone shared git packages listed in packages.list"
+    },
+    "check_localization.sh": {
+      "label": "check-localization",
+      "description": "Check ARB key parity and hardcoded UI strings in lib/"
+    }
+  }
+}

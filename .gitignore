@@ -1,0 +1,37 @@
+# Local machine setup (absolute paths differ per user)
+setup.env
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
+
+# Node / frontend build caches
+**/node_modules/
+**/.vite/
+**/dist/
+
+# Go build output
+**/bin/
+*.exe
+*.test
+*.out
+
+# Dart / Flutter tooling (if present under packages)
+**/.dart_tool/
+**/build/
+.packages
+.pub-cache/
+.pub/
+
+# Python caches (legacy helpers)
+**/__pycache__/
+*.py[cod]
+
+# Logs & temp
+*.log
+tmp/
+temp/
+.cache/
